@@ -1,0 +1,29 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="ecommerce" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" activateToolWindowBeforeRun="false">
+    <envs>
+      <env name="DB_PASSWORD" value="duy123" />
+      <env name="DB_URL" value="jdbc:postgresql://localhost:5432/ecommerce_db" />
+      <env name="DB_USERNAME" value="postgres" />
+      <env name="JWT_ACCESS_EXPIRATION" value="900000" />
+      <env name="JWT_REFRESH_EXPIRATION" value="604800000" />
+      <env name="JWT_SECRET" value="4139eef068ce45f5d46dd4081cc66c302b839b6c93cabeeb3386e2b416e8f86e" />
+      <env name="SERVER_PORT" value="8080" />
+    </envs>
+    <option name="INCLUDE_PROVIDED_SCOPE" value="false" />
+    <module name="ecommerce" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="com.tanduydev.ecommerce.EcommerceApplication" />
+    <extension name="net.ashald.envfile">
+      <option name="IS_ENABLED" value="true" />
+      <option name="IS_SUBST" value="true" />
+      <option name="IS_PATH_MACRO_SUPPORTED" value="true" />
+      <option name="IS_IGNORE_MISSING_FILES" value="true" />
+      <option name="IS_ENABLE_EXPERIMENTAL_INTEGRATIONS" value="true" />
+      <ENTRIES>
+        <ENTRY IS_ENABLED="true" PARSER="runconfig" IS_EXECUTABLE="false" />
+      </ENTRIES>
+    </extension>
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
