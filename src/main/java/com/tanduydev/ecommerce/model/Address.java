@@ -18,13 +18,15 @@ public class Address extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id")
     private Customer customer;
-
-    private String addressType;
+    @Column(nullable = false, length = 100)
     private String receiverName;
+    @Column(nullable = false, length = 15)
     private String receiverPhone;
-    private String provinceCity;
-    private String district;
-    private String ward;
+//    private String provinceCity;
+//    private String district;
+//    private String ward;
+//    private String detailAddress;
+@Column(nullable = false, columnDefinition = "TEXT")
     private String detailAddress;
     private Boolean isDefault;
 }

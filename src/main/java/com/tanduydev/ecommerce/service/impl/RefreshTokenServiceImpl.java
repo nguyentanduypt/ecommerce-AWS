@@ -17,7 +17,6 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
 
     private final RefreshTokenRepository refreshTokenRepository;
 
-    // Lấy giá trị thời gian sống của Refresh Token từ file yml
     @Value("${jwt.refresh-token-expiration}")
     private long refreshTokenDurationMs;
 
