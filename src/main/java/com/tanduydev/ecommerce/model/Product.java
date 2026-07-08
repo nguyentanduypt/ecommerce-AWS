@@ -1,6 +1,6 @@
 package com.tanduydev.ecommerce.model;
 
-import com.tanduydev.ecommerce.enums.ProductSatus;
+import com.tanduydev.ecommerce.enums.ProductStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -32,12 +32,12 @@ public class Product extends SoftDeleteBaseEntity {
     @Column(unique = true)
     private String slug;
 
-    private String thumbnailUrl;
+//    private String thumbnailUrl;
 
     @Column(columnDefinition = "TEXT")
     private String description;
     @Enumerated(EnumType.STRING)
-    private ProductSatus productSatus;
+    private ProductStatus productStatus;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductVariant> variants;

@@ -1,6 +1,6 @@
 package com.tanduydev.ecommerce.enums;
 
-public enum ProductSatus {
+public enum ProductStatus {
     ACTIVE
     ,INACTIVE
     , OUT_OF_STOCK
