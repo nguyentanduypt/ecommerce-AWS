@@ -19,11 +19,11 @@ public interface CartMapper {
     CartResponse toCartResponse(Cart cart);
 
     // Ánh xạ CartItem -> CartItemResponse
-    @Mapping(source = "variant.id", target = "variantId")
-    @Mapping(source = "variant.product.name", target = "productName")
-    @Mapping(source = "variant.attributesCombination", target = "attributesCombination")
-    @Mapping(source = "variant.imageUrl", target = "imageUrl")
-    @Mapping(source = "variant.price", target = "price")
+    @Mapping(source = "productVariant.id", target = "variantId")
+    @Mapping(source = "productVariant.product.name", target = "productName")
+    @Mapping(source = "productVariant.attributesCombination", target = "attributesCombination")
+    @Mapping(source = "productVariant.imageUrl", target = "imageUrl")
+    @Mapping(source = "productVariant.price", target = "price")
     CartItemResponse toCartItemResponse(CartItem cartItem);
 
     // Tính toán SubTotal (cho từng sản phẩm) và CartTotal (cho cả giỏ)

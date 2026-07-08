@@ -1,6 +1,7 @@
 package com.tanduydev.ecommerce.model;
 
 import com.tanduydev.ecommerce.enums.OrderStatus;
+import com.tanduydev.ecommerce.enums.PaymentMethod;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -50,8 +51,8 @@ public class Order extends SoftDeleteBaseEntity {
     private String shippingAddress;
 @Enumerated(EnumType.STRING)
     private OrderStatus status;
-    private String paymentStatus;
-
+@Enumerated(EnumType.STRING)
+private PaymentMethod  paymentMethod;
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> orderItems;
 }
