@@ -5,14 +5,18 @@ import com.tanduydev.ecommerce.model.User;
 import com.tanduydev.ecommerce.repository.RefreshTokenRepository;
 import com.tanduydev.ecommerce.service.RefreshTokenService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value; // IMPORT CHUẨN CỦA SPRING
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
+@Slf4j
 public class RefreshTokenServiceImpl implements RefreshTokenService {
 
     private final RefreshTokenRepository refreshTokenRepository;
@@ -22,6 +26,11 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
 
     @Override
     public void createRefreshToken(User user, String token) {
+        log.info("[DEBUG] Token chuẩn bị lưu vào DB: {}", token);
+
+        if (token == null || token.length() < 20) {
+            throw new RuntimeException("Cảnh báo: Token rác được phát hiện: " + token);
+        }
         RefreshToken refreshToken = new RefreshToken();
         refreshToken.setUser(user);
         refreshToken.setToken(token); // Dùng đúng tên hàm setter của model

@@ -1,14 +1,19 @@
 package com.tanduydev.ecommerce.service.impl;
 
 import com.tanduydev.ecommerce.dto.request.order.OrderRequest;
+import com.tanduydev.ecommerce.dto.request.order.OrderSearchRequest;
+import com.tanduydev.ecommerce.dto.response.PagedResult;
 import com.tanduydev.ecommerce.dto.response.order.OrderResponse;
 import com.tanduydev.ecommerce.enums.OrderStatus;
 import com.tanduydev.ecommerce.mapper.OrderMapper;
 import com.tanduydev.ecommerce.model.*;
 import com.tanduydev.ecommerce.repository.*;
+import com.tanduydev.ecommerce.repository.specification.OrderSpecification;
 import com.tanduydev.ecommerce.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -141,5 +146,16 @@ public class OrderServiceImpl implements OrderService {
         }
 
         return orderMapper.toResponse(order);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PagedResult<OrderResponse> getAllOrders(OrderSearchRequest filter, Pageable pageable) {
+        log.info("[ORDER] Admin is fetching orders with pagination and filters");
+
+        Page<Order> ordersPage = orderRepository.findAll(OrderSpecification.withFilter(filter), pageable);
+
+        // Ánh xạ sang PagedResult
+        return new PagedResult<>(ordersPage.map(orderMapper::toResponse));
     }
 }

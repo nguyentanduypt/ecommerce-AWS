@@ -1,5 +1,7 @@
 package com.tanduydev.ecommerce.config;
 
+import com.tanduydev.ecommerce.security.CustomAccessDeniedHandler;
+import com.tanduydev.ecommerce.security.RestAuthenticationEntryPoint;
 import com.tanduydev.ecommerce.util.JWTFilter;
 import com.tanduydev.ecommerce.util.AppConstants;
 import lombok.RequiredArgsConstructor;
@@ -23,12 +25,17 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JWTFilter jwtFilter;
+    private final RestAuthenticationEntryPoint authEntryPoint;
+    private final CustomAccessDeniedHandler accessDeniedHandler;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .cors(Customizer.withDefaults())
+//                .cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(authEntryPoint)
+                        .accessDeniedHandler(accessDeniedHandler))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/v3/api-docs/**",

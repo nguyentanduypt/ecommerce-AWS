@@ -19,7 +19,7 @@ public class User extends SoftDeleteBaseEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
     private String fullName;
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "role_id")
     private Role role;
     private String phone;
@@ -29,5 +29,4 @@ public class User extends SoftDeleteBaseEntity {
     private String password;
     @Enumerated(EnumType.STRING)
     private  UserStatus status;
-
 }
