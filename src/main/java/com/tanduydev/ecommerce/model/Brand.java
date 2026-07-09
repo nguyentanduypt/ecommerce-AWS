@@ -1,5 +1,6 @@
 package com.tanduydev.ecommerce.model;
 
+import com.tanduydev.ecommerce.enums.BrandStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,7 +20,8 @@ public class Brand extends SoftDeleteBaseEntity {
 
     @Column(unique = true)
     private String name;
-
-    @Column(unique = true)
-    private String slug;
+    @Enumerated(EnumType.STRING)
+    private BrandStatus status;
+//    @Column(unique = true)
+//    private String slug;
 }

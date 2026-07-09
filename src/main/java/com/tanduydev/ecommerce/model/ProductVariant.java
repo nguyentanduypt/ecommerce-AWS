@@ -1,6 +1,10 @@
 package com.tanduydev.ecommerce.model;
 
+import com.tanduydev.ecommerce.enums.VariantStatus;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.SQLDelete;
@@ -25,9 +29,15 @@ public class ProductVariant extends SoftDeleteBaseEntity {
     @Column(unique = true)
     private String sku;
 
-    private String attributesCombination; // VD: "Color: Red, Size: XL"
+    private String attributesCombination; // EX: "Color: Red, Size: XL"
+    @NotNull(message = "Price is required")
+    @DecimalMin(value = "0.0", inclusive = false, message = "Price must be > 0")
     private BigDecimal price;
+    @NotNull(message = "Stock is required")
+    @Min(value = 0, message = "Stock cannot be negative")
     private Integer stock;
     private String imageUrl;
-    private String status;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private VariantStatus status;
 }

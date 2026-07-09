@@ -1,5 +1,9 @@
 package com.tanduydev.ecommerce.enums;
 
 public enum OrderStatus {
-    PENDING,COMPLETED,CANCELED
+    PENDING,
+    PROCESSING,
+    SHIPPED,
+    DELIVERED,
+    CANCELLED
 }
