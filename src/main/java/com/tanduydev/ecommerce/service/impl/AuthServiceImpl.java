@@ -75,10 +75,11 @@ public class AuthServiceImpl implements AuthService {
 
         var user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new IllegalArgumentException("Invalid email or password"));
-
+        String newRefreshToken = jwtUtil.generateRefreshToken(user);
+        refreshTokenService.createRefreshToken(user, newRefreshToken);
         return AuthResponse.builder()
                 .accessToken(jwtUtil.generateAccessToken(user))
-                .refreshToken(jwtUtil.generateRefreshToken(user))
+                .refreshToken(newRefreshToken)
                 .email(user.getEmail())
                 .fullName(user.getFullName())
                 .role(user.getRole().getName())

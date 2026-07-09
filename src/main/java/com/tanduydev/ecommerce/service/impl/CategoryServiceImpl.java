@@ -6,6 +6,7 @@ import com.tanduydev.ecommerce.mapper.CategoryMapper;
 import com.tanduydev.ecommerce.model.Category;
 import com.tanduydev.ecommerce.repository.CategoryRepository;
 import com.tanduydev.ecommerce.service.CategoryService;
+import com.tanduydev.ecommerce.service.BaseCacheService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +23,9 @@ public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
     private final CategoryMapper categoryMapper;
+    private final BaseCacheService cacheService; // Sử dụng BaseCacheService
+
+    private static final String CACHE_KEY_ALL = "categories:all";
 
     @Override
     @Transactional
@@ -32,18 +37,37 @@ public class CategoryServiceImpl implements CategoryService {
         }
 
         Category category = categoryMapper.toEntity(request);
-        categoryRepository.save(category);
+        Category savedCategory = categoryRepository.save(category);
 
-        log.info("[CATEGORY] Successfully created category with ID: {}", category.getId());
-        return categoryMapper.toResponse(category);
+        // Xóa cache danh sách
+        cacheService.evict(CACHE_KEY_ALL);
+
+        return categoryMapper.toResponse(savedCategory);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<CategoryResponse> getAllCategories() {
-        return categoryMapper.toResponseList(categoryRepository.findAll());
+        // 1. Lấy từ Cache
+        List cachedCategories = cacheService.get(CACHE_KEY_ALL, List.class);
+        if (cachedCategories != null) {
+            log.info("[CATEGORY] Cache HIT.");
+            return cachedCategories;
+        }
+
+        // 2. Lấy từ DB nếu Cache MISS
+        log.info("[CATEGORY] Cache MISS. Fetching from DB...");
+        List<Category> categories = categoryRepository.findAll();
+        List<CategoryResponse> responses = categoryMapper.toResponseList(categories);
+
+        // 3. Lưu vào Cache (Ví dụ 30 phút)
+        cacheService.put(CACHE_KEY_ALL, responses, 30, TimeUnit.MINUTES);
+
+        return responses;
     }
 
     @Override
+    @Transactional(readOnly = true)
     public CategoryResponse getCategoryById(UUID id) {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Category not found"));
@@ -61,10 +85,12 @@ public class CategoryServiceImpl implements CategoryService {
         }
 
         categoryMapper.updateEntity(category, request);
-        categoryRepository.save(category);
+        Category updatedCategory = categoryRepository.save(category);
 
-        log.info("[CATEGORY] Successfully updated category with ID: {}", id);
-        return categoryMapper.toResponse(category);
+        // Xóa cache danh sách
+        cacheService.evict(CACHE_KEY_ALL);
+
+        return categoryMapper.toResponse(updatedCategory);
     }
 
     @Override
@@ -72,7 +98,12 @@ public class CategoryServiceImpl implements CategoryService {
     public void deleteCategory(UUID id) {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Category not found"));
+
         categoryRepository.delete(category);
+
+        // Xóa cache danh sách
+        cacheService.evict(CACHE_KEY_ALL);
+
         log.info("[CATEGORY] Deleted category with ID: {}", id);
     }
 }

@@ -6,6 +6,7 @@ import com.tanduydev.ecommerce.mapper.BrandMapper;
 import com.tanduydev.ecommerce.model.Brand;
 import com.tanduydev.ecommerce.repository.BrandRepository;
 import com.tanduydev.ecommerce.service.BrandService;
+import com.tanduydev.ecommerce.service.BaseCacheService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +23,9 @@ public class BrandServiceImpl implements BrandService {
 
     private final BrandRepository brandRepository;
     private final BrandMapper brandMapper;
+    private final BaseCacheService cacheService;
+
+    private static final String CACHE_KEY_ALL = "brands:all";
 
     @Override
     @Transactional
@@ -32,18 +37,33 @@ public class BrandServiceImpl implements BrandService {
         }
 
         Brand brand = brandMapper.toEntity(request);
-        brandRepository.save(brand);
+        Brand savedBrand = brandRepository.save(brand);
 
-        log.info("[BRAND] Successfully created brand with ID: {}", brand.getId());
-        return brandMapper.toResponse(brand);
+        cacheService.evict(CACHE_KEY_ALL);
+
+        return brandMapper.toResponse(savedBrand);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<BrandResponse> getAllBrands() {
-        return brandMapper.toResponseList(brandRepository.findAll());
+        List cachedBrands = cacheService.get(CACHE_KEY_ALL, List.class);
+        if (cachedBrands != null) {
+            log.info("[BRAND] Cache HIT.");
+            return cachedBrands;
+        }
+
+        log.info("[BRAND] Cache MISS. Fetching from DB...");
+        List<Brand> brands = brandRepository.findAll();
+        List<BrandResponse> responses = brandMapper.toResponseList(brands);
+
+        cacheService.put(CACHE_KEY_ALL, responses, 30, TimeUnit.MINUTES);
+
+        return responses;
     }
 
     @Override
+    @Transactional(readOnly = true)
     public BrandResponse getBrandById(UUID id) {
         Brand brand = brandRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Brand not found"));
@@ -61,20 +81,23 @@ public class BrandServiceImpl implements BrandService {
         }
 
         brandMapper.updateEntity(brand, request);
-        brandRepository.save(brand);
+        Brand updatedBrand = brandRepository.save(brand);
 
-        log.info("[BRAND] Successfully updated brand with ID: {}", id);
-        return brandMapper.toResponse(brand);
+        cacheService.evict(CACHE_KEY_ALL);
+
+        return brandMapper.toResponse(updatedBrand);
     }
 
     @Override
     @Transactional
     public void deleteBrand(UUID id) {
-        // Nhờ có @SQLDelete ở Entity, hàm deleteById sẽ tự động chạy câu UPDATE deleted_at
         Brand brand = brandRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Brand not found"));
 
         brandRepository.delete(brand);
-        log.info("[BRAND] Soft deleted brand with ID: {}", id);
+
+        cacheService.evict(CACHE_KEY_ALL);
+
+        log.info("[BRAND] Deleted brand with ID: {}", id);
     }
 }
