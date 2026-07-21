@@ -10,4 +10,5 @@ public class WishlistResponse {
     private UUID productId;
     private String productName;
     private String productSlug;
+    private String productImage;
 }

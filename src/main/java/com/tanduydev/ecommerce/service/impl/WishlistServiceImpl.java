@@ -51,6 +51,7 @@ public class WishlistServiceImpl implements WishlistService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<WishlistResponse> getMyWishlist(String email) {
         List<Wishlist> wishlists = wishlistRepository.findAllByCustomer_Email(email);
         return wishlistMapper.toResponseList(wishlists);

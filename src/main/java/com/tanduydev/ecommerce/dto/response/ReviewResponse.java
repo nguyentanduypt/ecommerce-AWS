@@ -11,4 +11,5 @@ public class ReviewResponse {
     private String customerName;
     private Integer rating;
     private String comment;
+    private String avatarUrl;
 }

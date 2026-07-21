@@ -14,6 +14,7 @@ public class CustomerResponse {
     private String phone;
     private UserStatus status;
     private Gender genderEnum;
+    private String avatarUrl;
     private String roleName;
     // Nếu bạn cần trả về địa chỉ mặc định, có thể thêm 1 field:
     // private List<AddressResponse> addresses;

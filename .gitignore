@@ -4,6 +4,16 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+.env
+.env.local
+.env.*.local
+
+logs/
+*.log
+
+Thumbs.db
+ehthumbs.db
+
 ### STS ###
 .apt_generated
 .classpath

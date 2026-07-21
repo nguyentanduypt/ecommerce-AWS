@@ -33,6 +33,7 @@ public class OrderServiceImpl implements OrderService {
     private final CartRepository cartRepository;
     private final ProductVariantRepository variantRepository;
     private final CouponRepository couponRepository;
+    private final AddressRepository addressRepository;
     private final UserRepository userRepository;
     private final OrderMapper orderMapper;
 
@@ -49,37 +50,39 @@ public class OrderServiceImpl implements OrderService {
             throw new IllegalArgumentException("Your cart is empty");
         }
 
+        Address address = addressRepository.findById(request.getAddressId())
+                .orElseThrow(() -> new RuntimeException("Address not found"));
+
+        if (!address.getCustomer().getEmail().equals(email)) {
+            throw new RuntimeException("Invalid address");
+        }
+
         Order order = new Order();
         order.setCustomer(customer);
-        order.setReceiverName(request.getReceiverName());
-        order.setReceiverPhone(request.getReceiverPhone());
-        order.setShippingAddress(request.getShippingAddress());
+        order.setReceiverName(address.getReceiverName());
+        order.setReceiverPhone(address.getReceiverPhone());
+        order.setShippingAddress(address.getDetailAddress());
         order.setNote(request.getNote());
         order.setPaymentMethod(request.getPaymentMethod());
         order.setStatus(OrderStatus.PENDING);
 
-        // Sinh mã đơn hàng ngẫu nhiên (VD: ORD-20260708-XYZ)
         String timeStamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         String shortUuid = UUID.randomUUID().toString().substring(0, 6).toUpperCase();
         order.setOrderCode("ORD-" + timeStamp + "-" + shortUuid);
 
-        // Xử lý các OrderItem và Tính tổng tiền
         BigDecimal totalPrice = BigDecimal.ZERO;
         List<OrderItem> orderItems = new ArrayList<>();
 
         for (CartItem cartItem : cart.getCartItems()) {
             ProductVariant variant = cartItem.getProductVariant();
 
-            // 1. Kiểm tra lại tồn kho một lần nữa trước khi chốt đơn
             if (cartItem.getQuantity() > variant.getStock()) {
                 throw new IllegalArgumentException("Product " + variant.getProduct().getName() + " does not have enough stock");
             }
 
-            // 2. Trừ tồn kho dưới DB
             variant.setStock(variant.getStock() - cartItem.getQuantity());
             variantRepository.save(variant);
 
-            // 3. Tạo OrderItem
             OrderItem orderItem = new OrderItem();
             orderItem.setOrder(order);
             orderItem.setProductVariant(variant);
@@ -98,31 +101,24 @@ public class OrderServiceImpl implements OrderService {
         order.setOrderItems(orderItems);
         order.setTotalPrice(totalPrice);
 
-        // Tính phí ship (Giả sử fix cứng 30,000 VND, thực tế có thể gọi API Giao Hàng Nhanh)
         BigDecimal shippingFee = new BigDecimal("30000");
         order.setShippingFee(shippingFee);
 
-        // Xử lý Coupon (Nếu có truyền mã)
         BigDecimal discountAmount = BigDecimal.ZERO;
         if (request.getCouponCode() != null && !request.getCouponCode().isBlank()) {
             Coupon coupon = couponRepository.findByCode(request.getCouponCode())
                     .orElseThrow(() -> new IllegalArgumentException("Invalid coupon code"));
 
-            // Kiểm tra tính hợp lệ của Coupon (Giả sử bạn có các logic isActive, minPurchase...)
-            // Ở đây mình ví dụ trừ 10%
             discountAmount = totalPrice.multiply(new BigDecimal("0.1"));
             order.setCoupon(coupon);
         }
         order.setDiscountAmount(discountAmount);
 
-        // Tổng thu cuối cùng
         BigDecimal grandTotal = totalPrice.add(shippingFee).subtract(discountAmount);
-        order.setGrandTotal(grandTotal.max(BigDecimal.ZERO)); // Đảm bảo không bị số âm
+        order.setGrandTotal(grandTotal.max(BigDecimal.ZERO));
 
-        // Lưu đơn hàng
         Order savedOrder = orderRepository.save(order);
 
-        // Xóa sạch giỏ hàng
         cart.getCartItems().clear();
         cartRepository.save(cart);
 
@@ -131,12 +127,14 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<OrderResponse> getMyOrders(String email) {
         List<Order> orders = orderRepository.findAllByCustomer_EmailOrderByCreatedAtDesc(email);
         return orderMapper.toResponseList(orders);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public OrderResponse getOrderByCode(String email, String orderCode) {
         Order order = orderRepository.findByOrderCode(orderCode)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
@@ -149,13 +147,36 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional
+    public OrderResponse updateOrderStatus(UUID id, OrderStatus newStatus) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        if (order.getStatus() == OrderStatus.CANCELLED) {
+            throw new IllegalArgumentException("Cannot change status of a cancelled order");
+        }
+
+        if (newStatus == OrderStatus.CANCELLED) {
+            for (OrderItem item : order.getOrderItems()) {
+                ProductVariant variant = item.getProductVariant();
+                variant.setStock(variant.getStock() + item.getQuantity());
+                variantRepository.save(variant);
+            }
+            log.info("[ORDER] Restored stock for cancelled order: {}", order.getOrderCode());
+        }
+
+        order.setStatus(newStatus);
+        Order savedOrder = orderRepository.save(order);
+
+        log.info("[ORDER] Admin updated order {} to status {}", order.getOrderCode(), newStatus);
+        return orderMapper.toResponse(savedOrder);
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public PagedResult<OrderResponse> getAllOrders(OrderSearchRequest filter, Pageable pageable) {
         log.info("[ORDER] Admin is fetching orders with pagination and filters");
-
         Page<Order> ordersPage = orderRepository.findAll(OrderSpecification.withFilter(filter), pageable);
-
-        // Ánh xạ sang PagedResult
         return new PagedResult<>(ordersPage.map(orderMapper::toResponse));
     }
 }

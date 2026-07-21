@@ -5,6 +5,7 @@ import jakarta.validation.constraints.*;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
@@ -25,7 +26,7 @@ public class CouponRequest {
 
     @NotNull(message = "Expiry date is required")
     @Future(message = "Expiry date must be in the future")
-    private LocalDateTime expiryDate;
+    private LocalDate expiryDate;
 
     @Min(value = 1, message = "Quantity must be at least 1")
     private Integer quantity;

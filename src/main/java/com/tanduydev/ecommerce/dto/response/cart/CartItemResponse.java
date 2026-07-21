@@ -9,6 +9,7 @@ import java.util.UUID;
 public class CartItemResponse {
     private UUID id;
     private UUID variantId;
+    private UUID productId;
     private String productName;
     private String attributesCombination;
     private String imageUrl;

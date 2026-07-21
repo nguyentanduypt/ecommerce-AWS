@@ -19,6 +19,7 @@ public interface ReviewMapper {
 
     @Mapping(source = "product.id", target = "productId")
     @Mapping(source = "customer.fullName", target = "customerName")
+    @Mapping(source = "customer.avatarUrl", target = "avatarUrl")
     ReviewResponse toResponse(Review review);
     void updateEntity(@MappingTarget Review review, ReviewUpdateRequest request);
     List<ReviewResponse> toResponseList(List<Review> reviews);

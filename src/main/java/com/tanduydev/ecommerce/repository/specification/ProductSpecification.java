@@ -14,6 +14,12 @@ public class ProductSpecification {
 
     public static Specification<Product> withFilter(ProductSearchRequest filter) {
         return (root, query, cb) -> {
+            if (Long.class != query.getResultType()) {
+                root.fetch("reviews", jakarta.persistence.criteria.JoinType.LEFT);
+                root.fetch("variants", jakarta.persistence.criteria.JoinType.LEFT);
+                root.fetch("category", jakarta.persistence.criteria.JoinType.LEFT);
+                root.fetch("brand", jakarta.persistence.criteria.JoinType.LEFT);
+            }
             List<Predicate> predicates = new ArrayList<>();
 
             // 1. Lọc theo tên (Tương đối - LIKE)

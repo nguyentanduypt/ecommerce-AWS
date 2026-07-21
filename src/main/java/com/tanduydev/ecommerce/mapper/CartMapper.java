@@ -14,19 +14,29 @@ import java.math.BigDecimal;
 @Mapper(componentModel = "spring")
 public interface CartMapper {
 
-    // Ánh xạ Cart -> CartResponse
     @Mapping(source = "cartItems", target = "items")
     CartResponse toCartResponse(Cart cart);
 
-    // Ánh xạ CartItem -> CartItemResponse
     @Mapping(source = "productVariant.id", target = "variantId")
     @Mapping(source = "productVariant.product.name", target = "productName")
+    @Mapping(source = "productVariant.product.id", target = "productId")
     @Mapping(source = "productVariant.attributesCombination", target = "attributesCombination")
     @Mapping(source = "productVariant.imageUrl", target = "imageUrl")
     @Mapping(source = "productVariant.price", target = "price")
     CartItemResponse toCartItemResponse(CartItem cartItem);
+    @AfterMapping
+    default void setFallbackImage(CartItem cartItem, @MappingTarget CartItemResponse response) {
+        if (response.getImageUrl() == null || response.getImageUrl().isEmpty()) {
+            if (cartItem.getProductVariant() != null && cartItem.getProductVariant().getProduct() != null) {
+                var product = cartItem.getProductVariant().getProduct();
+                if (product.getImages() != null && !product.getImages().isEmpty()) {
+                    var firstImage = product.getImages().iterator().next();
+                    response.setImageUrl(firstImage.getImageUrl());
+                }
+            }
+        }
+    }
 
-    // Tính toán SubTotal (cho từng sản phẩm) và CartTotal (cho cả giỏ)
     @AfterMapping
     default void calculateTotals(Cart cart, @MappingTarget CartResponse response) {
         BigDecimal cartTotal = BigDecimal.ZERO;
