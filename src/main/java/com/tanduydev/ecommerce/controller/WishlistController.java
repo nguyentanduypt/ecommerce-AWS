@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/wishlists")
+@RequestMapping("/api/v1/wishlist")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('CUSTOMER')")
 public class WishlistController {

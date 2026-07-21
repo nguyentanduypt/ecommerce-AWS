@@ -22,6 +22,7 @@ public class Brand extends SoftDeleteBaseEntity {
     private String name;
     @Enumerated(EnumType.STRING)
     private BrandStatus status;
+    private String imageUrl;
 //    @Column(unique = true)
 //    private String slug;
 }

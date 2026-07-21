@@ -26,10 +26,10 @@ public class ProductRequest {
     @NotNull(message = "Product status is required")
     private ProductStatus productStatus;
 
-    @Valid
+    // Đã sửa cách đặt @Valid để hết báo vàng (HV000271)
     @NotEmpty(message = "Product must have at least one variant")
-    private List<ProductVariantRequest> variants;
+    private List<@Valid ProductVariantRequest> variants;
 
-    @Valid
+    // Chứa danh sách ảnh cũ muốn GIỮ LẠI khi update (từ Frontend gửi lên)
     private List<ProductImageRequest> images;
 }

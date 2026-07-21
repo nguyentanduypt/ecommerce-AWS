@@ -8,6 +8,7 @@
       <env name="JWT_REFRESH_EXPIRATION" value="604800000" />
       <env name="JWT_SECRET" value="4139eef068ce45f5d46dd4081cc66c302b839b6c93cabeeb3386e2b416e8f86e" />
       <env name="SERVER_PORT" value="8080" />
+      <env name="CORS_ALLOWED_ORIGINS" value="https://mydomain.com,http://localhost:5173" />
     </envs>
     <option name="INCLUDE_PROVIDED_SCOPE" value="false" />
     <module name="ecommerce" />

@@ -6,14 +6,14 @@ import com.tanduydev.ecommerce.dto.request.auth.AuthRegister;
 import com.tanduydev.ecommerce.dto.request.auth.RefreshTokenRequest;
 import com.tanduydev.ecommerce.dto.response.AuthResponse;
 import com.tanduydev.ecommerce.dto.response.RefreshTokenResponse;
+import com.tanduydev.ecommerce.dto.response.UserProfileResponse;
 import com.tanduydev.ecommerce.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -40,5 +40,12 @@ public class AuthController {
     public ResponseEntity<ApiResponse<String>> logout(@RequestBody RefreshTokenRequest request) {
         authService.logout(request);
         return ResponseEntity.ok(ApiResponse.success("Logout successful", null));
+    }
+    @GetMapping("/me")
+    public ResponseEntity<ApiResponse<UserProfileResponse>> getMe() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentEmail = authentication.getName();
+
+        return ResponseEntity.ok(ApiResponse.success("Profile fetched", authService.getMe(currentEmail)));
     }
 }

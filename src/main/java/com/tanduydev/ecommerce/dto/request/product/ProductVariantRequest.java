@@ -1,5 +1,7 @@
 package com.tanduydev.ecommerce.dto.request.product;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -9,6 +11,9 @@ import lombok.Data;
 import java.math.BigDecimal;
 @Data
 public class ProductVariantRequest {
+    @JsonProperty("variantId")
+    @JsonAlias({"id", "variantId"})
+    private String id;
     @NotBlank(message = "SKU is required")
     private String sku;
 

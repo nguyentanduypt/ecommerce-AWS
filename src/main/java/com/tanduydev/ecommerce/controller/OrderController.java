@@ -4,6 +4,7 @@ import com.tanduydev.ecommerce.dto.ApiResponse;
 import com.tanduydev.ecommerce.dto.request.order.OrderRequest;
 import com.tanduydev.ecommerce.dto.request.order.OrderSearchRequest;
 import com.tanduydev.ecommerce.dto.response.order.OrderResponse;
+import com.tanduydev.ecommerce.enums.OrderStatus;
 import com.tanduydev.ecommerce.service.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/orders")
@@ -52,6 +54,16 @@ public class OrderController {
         return ResponseEntity.ok(ApiResponse.success(
                 "Fetched order details successfully",
                 orderService.getOrderByCode(principal.getName(), orderCode)
+        ));
+    }
+    @PreAuthorize("hasRole('ADMIN')")
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<ApiResponse<OrderResponse>> updateOrderStatus(
+            @PathVariable UUID id,
+            @RequestParam OrderStatus status) {
+        return ResponseEntity.ok(ApiResponse.success(
+                "Order status updated successfully",
+                orderService.updateOrderStatus(id, status)
         ));
     }
     @PreAuthorize("hasRole('ADMIN')")

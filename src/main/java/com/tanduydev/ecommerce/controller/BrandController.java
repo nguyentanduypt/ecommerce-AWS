@@ -6,9 +6,11 @@ import com.tanduydev.ecommerce.dto.response.BrandResponse;
 import com.tanduydev.ecommerce.service.BrandService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.UUID;
@@ -31,15 +33,22 @@ public class BrandController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping
-    public ResponseEntity<ApiResponse<BrandResponse>> createBrand(@Valid @RequestBody BrandRequest request) {
-        return ResponseEntity.ok(ApiResponse.success("Brand created successfully", brandService.createBrand(request)));
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ApiResponse<BrandResponse>> createBrand(
+            @Valid @ModelAttribute BrandRequest request,
+            @RequestPart(value = "image", required = false) MultipartFile image) {
+        return ResponseEntity.ok(ApiResponse.success("Brand created successfully",
+                brandService.createBrand(request, image)));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<BrandResponse>> updateBrand(@PathVariable UUID id, @Valid @RequestBody BrandRequest request) {
-        return ResponseEntity.ok(ApiResponse.success("Brand updated successfully", brandService.updateBrand(id, request)));
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ApiResponse<BrandResponse>> updateBrand(
+            @PathVariable UUID id,
+            @Valid @ModelAttribute BrandRequest request,
+            @RequestPart(value = "image", required = false) MultipartFile image) {
+        return ResponseEntity.ok(ApiResponse.success("Brand updated successfully",
+                brandService.updateBrand(id, request, image)));
     }
 
     @PreAuthorize("hasRole('ADMIN')")

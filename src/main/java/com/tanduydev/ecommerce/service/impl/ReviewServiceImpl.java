@@ -52,6 +52,7 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ReviewResponse> getProductReviews(UUID productId) {
         return reviewMapper.toResponseList(reviewRepository.findAllByProduct_Id(productId));
     }
@@ -77,12 +78,10 @@ public class ReviewServiceImpl implements ReviewService {
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new RuntimeException("Review not found"));
 
-        // 2. Kiểm tra xem người đang request có phải là chủ nhân của review này không
         if (!review.getCustomer().getEmail().equals(email)) {
             throw new RuntimeException("You do not have permission to update this review");
         }
 
-        // 3. Cập nhật dữ liệu mới và lưu lại
         reviewMapper.updateEntity(review, request);
 
         log.info("[REVIEW] Review {} updated by user {}", reviewId, email);

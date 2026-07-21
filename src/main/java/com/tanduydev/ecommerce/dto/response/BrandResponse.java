@@ -9,5 +9,6 @@ import java.util.UUID;
 public class BrandResponse {
     private UUID id;
     private String name;
+    private String imageUrl;
     private BrandStatus status;
 }

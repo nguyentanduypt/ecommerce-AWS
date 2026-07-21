@@ -7,10 +7,12 @@ import com.tanduydev.ecommerce.model.Brand;
 import com.tanduydev.ecommerce.repository.BrandRepository;
 import com.tanduydev.ecommerce.service.BrandService;
 import com.tanduydev.ecommerce.service.BaseCacheService;
+import com.tanduydev.ecommerce.service.FileService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.UUID;
@@ -24,26 +26,28 @@ public class BrandServiceImpl implements BrandService {
     private final BrandRepository brandRepository;
     private final BrandMapper brandMapper;
     private final BaseCacheService cacheService;
-
+    private final FileService fileService;
     private static final String CACHE_KEY_ALL = "brands:all";
 
     @Override
     @Transactional
-    public BrandResponse createBrand(BrandRequest request) {
-        log.info("[BRAND] Creating new brand: {}", request.getName());
-
+    public BrandResponse createBrand(BrandRequest request, MultipartFile image) {
         if (brandRepository.existsByName(request.getName())) {
             throw new IllegalArgumentException("Brand name already exists");
         }
 
         Brand brand = brandMapper.toEntity(request);
+
+        // Xử lý upload ảnh
+        if (image != null && !image.isEmpty()) {
+            String imageUrl = fileService.uploadFile(image, "brands");
+            brand.setImageUrl(imageUrl); // Đảm bảo Entity Brand của bạn đã có trường này
+        }
+
         Brand savedBrand = brandRepository.save(brand);
-
         cacheService.evict(CACHE_KEY_ALL);
-
         return brandMapper.toResponse(savedBrand);
     }
-
     @Override
     @Transactional(readOnly = true)
     public List<BrandResponse> getAllBrands() {
@@ -72,19 +76,19 @@ public class BrandServiceImpl implements BrandService {
 
     @Override
     @Transactional
-    public BrandResponse updateBrand(UUID id, BrandRequest request) {
+    public BrandResponse updateBrand(UUID id, BrandRequest request, MultipartFile image) {
         Brand brand = brandRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Brand not found"));
-
         if (!brand.getName().equals(request.getName()) && brandRepository.existsByName(request.getName())) {
             throw new IllegalArgumentException("Brand name already exists");
         }
-
         brandMapper.updateEntity(brand, request);
+        if (image != null && !image.isEmpty()) {
+            String newImageUrl = fileService.uploadFile(image, "brands");
+            brand.setImageUrl(newImageUrl);
+        }
         Brand updatedBrand = brandRepository.save(brand);
-
         cacheService.evict(CACHE_KEY_ALL);
-
         return brandMapper.toResponse(updatedBrand);
     }
 

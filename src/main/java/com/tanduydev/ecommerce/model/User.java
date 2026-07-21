@@ -25,6 +25,8 @@ public class User extends SoftDeleteBaseEntity {
     private String phone;
     @Column(unique = true, nullable = false)
     private String email;
+    @Column(name = "avatar_url")
+    private String avatarUrl;
     @Column(nullable = false)
     private String password;
     @Enumerated(EnumType.STRING)

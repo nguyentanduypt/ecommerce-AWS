@@ -5,18 +5,13 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
+import java.util.UUID;
+
 @Data
 public class OrderRequest {
 
-    @NotBlank(message = "Receiver name is required")
-    private String receiverName;
-
-    @NotBlank(message = "Receiver phone is required")
-    private String receiverPhone;
-
-    @NotBlank(message = "Shipping address is required")
-    private String shippingAddress;
-
+    @NotNull(message = "Address ID is required")
+    private UUID addressId;
     private String note;
 
     @NotNull(message = "Payment method is required")

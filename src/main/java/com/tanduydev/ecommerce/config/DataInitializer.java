@@ -23,10 +23,10 @@ public class DataInitializer implements CommandLineRunner {
     private final PasswordEncoder passwordEncoder;
 
     @Override
-    @Transactional // Đảm bảo nếu tạo Role lỗi thì không tạo Admin và ngược lại
+    @Transactional
     public void run(String... args) throws Exception {
 
-        // 1. Khởi tạo Role mặc định nếu chưa có
+
         if (roleRepository.count() == 0) {
             log.info("[DATA INIT] Bắt đầu khởi tạo dữ liệu Role mặc định...");
 

@@ -5,6 +5,7 @@ import com.tanduydev.ecommerce.dto.request.auth.AuthRegister;
 import com.tanduydev.ecommerce.dto.request.auth.RefreshTokenRequest;
 import com.tanduydev.ecommerce.dto.response.AuthResponse;
 import com.tanduydev.ecommerce.dto.response.RefreshTokenResponse;
+import com.tanduydev.ecommerce.dto.response.UserProfileResponse;
 import com.tanduydev.ecommerce.enums.UserStatus;
 import com.tanduydev.ecommerce.model.Customer;
 import com.tanduydev.ecommerce.model.User;
@@ -35,7 +36,7 @@ public class AuthServiceImpl implements AuthService {
     private final JWTUtil jwtUtil;
 
     @Override
-    @Transactional // QUAN TRỌNG: Đảm bảo nếu lưu User lỗi, thì không lưu Role/Customer
+    @Transactional
     public AuthResponse register(AuthRegister request) {
         log.info("[AUTH] Attempting to register user: {}", request.getEmail());
 
@@ -61,6 +62,7 @@ public class AuthServiceImpl implements AuthService {
                 .refreshToken(jwtUtil.generateRefreshToken(customer))
                 .email(customer.getEmail())
                 .fullName(customer.getFullName())
+                .phone(customer.getPhone())
                 .role(customer.getRole().getName())
                 .build();
     }
@@ -82,6 +84,7 @@ public class AuthServiceImpl implements AuthService {
                 .refreshToken(newRefreshToken)
                 .email(user.getEmail())
                 .fullName(user.getFullName())
+                .phone(user.getPhone())
                 .role(user.getRole().getName())
                 .build();
     }
@@ -106,6 +109,21 @@ public class AuthServiceImpl implements AuthService {
         return RefreshTokenResponse.builder()
                 .accessToken(newAccessToken)
                 .refreshToken(newRefreshToken)
+                .build();
+    }
+
+    @Override
+    public UserProfileResponse getMe(String email) {
+        log.info("[AUTH] Fetching current user profile for: {}", email);
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        return UserProfileResponse.builder()
+                .email(user.getEmail())
+                .fullName(user.getFullName())
+                .phone(user.getPhone())
+                .role(user.getRole().getName())
                 .build();
     }
 
